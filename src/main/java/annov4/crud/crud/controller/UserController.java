@@ -7,46 +7,48 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @AllArgsConstructor
-@RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
 
-    @GetMapping
+    @GetMapping("/users")
     public String listUsers(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
-        return "index";
+        List<User> users = userService.getAllUsers();
+        model.addAttribute("users", users);
+        return "users";
     }
 
-    @GetMapping("/new")
-    public String showUserForm(Model model) {
-        model.addAttribute("user", new User());
-        return "add";
+    @GetMapping("/user-create")
+    public String createUserForm(User user) {
+        return "user-create";
     }
 
-    @PostMapping
-    public String saveUser(@ModelAttribute("user") User user) {
+    @PostMapping("/user-create")
+    public String saveUser(User user) {
         userService.saveUser(user);
-        return "redirect:/index";
+        return "redirect:/users";
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@ModelAttribute("user") User user, @PathVariable Long id) {
-        User existingUser = userService.getUserById(id);
-        existingUser.setName(user.getName());
-        existingUser.setAge(user.getAge());
-        existingUser.setEmail(user.getEmail());
-
-        userService.updateUser(existingUser);
-        return "edit";
+    @GetMapping("/user-update/{id}")
+    public String updateUserForm(@PathVariable("id") Long id, Model model) {
+        User user = userService.getUserById(id);
+        model.addAttribute("user", user);
+        return "user-update";
     }
 
+    @PostMapping("/user-update")
+    public String updateUser(@ModelAttribute("user") User user) {
+        userService.saveUser(user);
+        return "redirect:/users";
+    }
 
     @GetMapping("/delete/{id}")
-    public String deleteUser(@PathVariable Long id) {
+    public String deleteUser(@PathVariable("id") Long id) {
         userService.deleteUserById(id);
-        return "redirect:/user";
+        return "redirect:/users";
     }
 }
